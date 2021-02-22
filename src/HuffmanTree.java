@@ -207,7 +207,7 @@ public class HuffmanTree {
             e.printStackTrace();
         }
         return result;
-    }
+    }//编码器
     private String decoding(String filename) throws DecodeException{
         String result="";
         try {
@@ -236,10 +236,10 @@ public class HuffmanTree {
             e.printStackTrace();
         }
         return result;
-    }
+    }//解码器
 }
 
-class Node implements Comparable<Node> {
+class Node implements Comparable<Node> {//节点
     character value;
     Node left;
     Node right;
