@@ -19,7 +19,7 @@ public class HuffmanTree {
         Scanner sysScan=new Scanner(System.in);
         int indicator=0;
         while(indicator==0){
-            System.out.println("Please choose your beginning:\n1.From Initialization\n2.From Files:\"hfmtree.txt\"\n" +
+            System.out.println("\nPlease choose your beginning:\n1.From Initialization\n2.From Files:\"hfmtree.txt\"\n" +
                     "3.From Coding Files:\"tobetrans.txt\"\n4.From Decoding Files:\"codefiles.txt\"\nother num for exit");
             int choice=sysScan.nextInt();
             switch (choice){
@@ -61,6 +61,7 @@ public class HuffmanTree {
                         tree.root=tree.readString(text);
                         encoder(tree.root,tree.elements,"");
                         writer(tree.decoding("codefile.txt"),"textfile.txt");
+                        tree.print("codefile.txt");
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }catch (DecodeException e) {
@@ -72,8 +73,6 @@ public class HuffmanTree {
                     indicator=1;
             }
         }
-        //Node.preOrderTraversal(tree.root);
-
     }
     public void input(){
         System.out.println("Input number of elements:");
@@ -237,6 +236,42 @@ public class HuffmanTree {
         }
         return result;
     }//解码器
+    public void print(String filename) throws DecodeException{
+        String stringToFile="";
+        try {
+            String data=reader(filename);
+            int counter=0,i=0;
+            String result="";
+            while(i<data.length()){
+                while(counter<=50&&i<data.length()){
+                    Node temp=root;
+                    while(!temp.isLeaf()){
+                        if(data.charAt(i)=='0'){
+                            temp=temp.left;
+                            i++;
+                        }
+                        else{
+                            if(data.charAt(i)=='1'){
+                                temp=temp.right;
+                                i++;
+                            }
+                            else{
+                                throw new DecodeException();
+                            }
+                        }
+                    }
+                    result+=temp.route;
+                    counter++;
+                }
+                System.out.println(result);
+                stringToFile+=result;
+                counter=0;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        writer(stringToFile,"codeprint.txt");
+    }
 }
 
 class Node implements Comparable<Node> {//节点
