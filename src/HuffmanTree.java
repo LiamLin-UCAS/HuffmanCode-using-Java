@@ -19,8 +19,13 @@ public class HuffmanTree {
         Scanner sysScan=new Scanner(System.in);
         int indicator=0;
         while(indicator==0){
-            System.out.println("\nPlease choose your beginning:\n1.From Initialization\n2.From Files:\"hfmtree.txt\"\n" +
-                    "3.From Coding Files:\"tobetrans.txt\"\n4.From Decoding Files:\"codefiles.txt\"\nother num for exit");
+            System.out.println("\nPlease choose your beginning:\n" +
+                    "1.From Initialization\n" +
+                    "2.From Files:\"hfmtree.txt\"\n" +
+                    "3.From Coding Files:\"tobetrans.txt\" to Files:\"codefile.txt\"\n" +
+                    "4.From Decoding Files:\"codefile.txt\" to Files:\"textfile.txt\" and print \"codefile.txt\"\n" +
+                    "5.From Tree Printing\n" +
+                    "other num for exit");
             int choice=sysScan.nextInt();
             switch (choice){
                 case 1:
@@ -66,6 +71,18 @@ public class HuffmanTree {
                         e.printStackTrace();
                     }catch (DecodeException e) {
                         System.out.println("Wrong in codefile.txt");
+                    }
+                    break;
+                }
+                case 5:{
+                    String text;
+                    try {
+                        text=reader("hfmtree.txt");
+                        tree.index=0;
+                        tree.root=tree.readString(text);
+                        show(tree.root);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
                     }
                     break;
                 }
@@ -271,6 +288,72 @@ public class HuffmanTree {
             e.printStackTrace();
         }
         writer(stringToFile,"codeprint.txt");
+    }
+    public static int getTreeDepth(Node root) {
+        return root == null ? 0 : (1 + Math.max(getTreeDepth(root.left), getTreeDepth(root.right)));
+    }
+    private static void writeArray(Node currNode, int rowIndex, int columnIndex, String[][] res, int treeDepth) {
+        // 保证输入的树不为空
+        if (currNode == null) return;
+        // 先将当前节点保存到二维数组中
+        if(currNode.value.aChar!='\0')
+            res[rowIndex][columnIndex] = String.valueOf(currNode.value.aChar);
+        else
+            res[rowIndex][columnIndex]="#";
+        // 计算当前位于树的第几层
+        int currLevel = ((rowIndex + 1) / 2);
+        // 若到了最后一层，则返回
+        if (currLevel == treeDepth) return;
+        // 计算当前行到下一行，每个元素之间的间隔（下一行的列索引与当前元素的列索引之间的间隔）
+        int gap = treeDepth - currLevel - 1;
+
+        // 对左儿子进行判断，若有左儿子，则记录相应的"/"与左儿子的值
+        if (currNode.left != null) {
+            res[rowIndex + 1][columnIndex - gap] = "/";
+            writeArray(currNode.left, rowIndex + 2, columnIndex - gap * 2, res, treeDepth);
+        }
+
+        // 对右儿子进行判断，若有右儿子，则记录相应的"\"与右儿子的值
+        if (currNode.right != null) {
+            res[rowIndex + 1][columnIndex + gap] = "\\";
+            writeArray(currNode.right, rowIndex + 2, columnIndex + gap * 2, res, treeDepth);
+        }
+    }
+
+
+    public static void show(Node root) {
+        if (root == null) System.out.println("EMPTY!");
+        // 得到树的深度
+        int treeDepth = getTreeDepth(root);
+
+        // 最后一行的宽度为2的（n - 1）次方乘3，再加1
+        // 作为整个二维数组的宽度
+        int arrayHeight = treeDepth * 2 - 1;
+        int arrayWidth = (2 << (treeDepth - 2)) * 3 + 1;
+        // 用一个字符串数组来存储每个位置应显示的元素
+        String[][] res = new String[arrayHeight][arrayWidth];
+        // 对数组进行初始化，默认为一个空格
+        for (int i = 0; i < arrayHeight; i ++) {
+            for (int j = 0; j < arrayWidth; j ++) {
+                res[i][j] = " ";
+            }
+        }
+
+        // 从根节点开始，递归处理整个树
+        // res[0][(arrayWidth + 1)/ 2] = (char)(root.val + '0');
+        writeArray(root, 0, arrayWidth/ 2, res, treeDepth);
+
+        // 此时，已经将所有需要显示的元素储存到了二维数组中，将其拼接并打印即可
+        for (String[] line: res) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < line.length; i ++) {
+                sb.append(line[i]);
+                if (line[i].length() > 1 && i <= line.length - 1) {
+                    i += line[i].length() > 4 ? 2: line[i].length() - 1;
+                }
+            }
+            System.out.println(sb.toString());
+        }
     }
 }
 
