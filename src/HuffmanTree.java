@@ -1,15 +1,16 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import Exceptions.*;
 import nodes.*;
-
-public class HuffmanTree {
+abstract class Tree{
     public Node root;
+    public static void show(Node root){};
+}
+public class HuffmanTree extends Tree{
+    //public Node root;
     public int index;
     private int length;
     private List<Node> elements;
@@ -32,7 +33,11 @@ public class HuffmanTree {
                     tree.input();
                     String treeInString="";
                     treeInString=tree.treeToString(tree.root,treeInString);
-                    writer(treeInString,"hfmtree.txt");
+                    try {
+                        writer(treeInString,"hfmtree.txt");
+                    } catch (IOException e) {
+                        System.out.println("Files write error!");
+                    }
                     break;
                 case 2: {
                     String text;
@@ -40,7 +45,7 @@ public class HuffmanTree {
                         text = reader("hfmtree.txt");
                         tree.index=0;
                         tree.root=tree.readString(text);
-                    } catch (FileNotFoundException e) {
+                    } catch (IOException e) {
                         System.out.println("File not found");
                     }
                     break;
@@ -52,9 +57,10 @@ public class HuffmanTree {
                         tree.index=0;
                         tree.root=tree.readString(text);
                         encoder(tree.root,tree.elements,"");
-                        writer(tree.coding("tobetrans.txt"),"codefile.txt");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        text=tree.coding("tobetrans.txt");
+                        writer(text,"codefile.txt");
+                    } catch (IOException e) {
+                        System.out.println("File not found");
                     }
                     break;
                 }
@@ -67,8 +73,8 @@ public class HuffmanTree {
                         encoder(tree.root,tree.elements,"");
                         writer(tree.decoding("codefile.txt"),"textfile.txt");
                         tree.print("codefile.txt");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                    } catch (IOException e) {
+                        System.out.println("File not found");
                     }catch (DecodeException e) {
                         System.out.println("Wrong in codefile.txt");
                     }
@@ -81,8 +87,8 @@ public class HuffmanTree {
                         tree.index=0;
                         tree.root=tree.readString(text);
                         show(tree.root);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                    } catch (IOException e) {
+                        System.out.println("File not found");
                     }
                     break;
                 }
@@ -160,21 +166,16 @@ public class HuffmanTree {
             return null;
         }
     }
-    public static String reader(String filename) throws FileNotFoundException{
+    public static String reader(String filename) throws IOException{
         String data="";
         File file=new File("D:"+File.separator+"山东大学"+File.separator+
                 "软工大二下"+File.separator+"数据结构课设"+File.separator+"数据"+File.separator+filename);
-        try {
             Scanner scan=new Scanner(file, StandardCharsets.UTF_8);
             data=scan.nextLine();
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (NoSuchElementException e){
-            System.out.println("Empty File:"+filename);
-        }
+            scan.close();
         return data;
     }
-    public static boolean writer(String data,String filename){
+    public static boolean writer(String data,String filename)throws IOException{
         if(data!=""){
             File file=new File("D:"+File.separator+"山东大学"+File.separator+
                     "软工大二下"+File.separator+"数据结构课设"+File.separator+"数据"+File.separator+filename);
@@ -182,13 +183,16 @@ public class HuffmanTree {
                 System.out.println(filename+" is replaced");
                 file.delete();
             }
+            FileOutputStream fileOutputStream=null;
             try {
-                FileOutputStream fileOutputStream=new FileOutputStream(file,true);
+                fileOutputStream=new FileOutputStream(file,true);
                 byte[] bytes=data.getBytes(StandardCharsets.UTF_8);
                 fileOutputStream.write(bytes);
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
+            }finally {
+                fileOutputStream.close();
             }
         }
         return false;
@@ -206,9 +210,8 @@ public class HuffmanTree {
             encoder(node.right,nodes,route+"1");
         }
     }
-    private String coding(String filename){
+    private String coding(String filename) throws IOException{
         String result="";
-        try {
             String data=reader(filename);
             for(int i=0;i<data.length();i++){
                 char temp=data.charAt(i);
@@ -219,9 +222,6 @@ public class HuffmanTree {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
         return result;
     }//编码器
     private String decoding(String filename) throws DecodeException{
@@ -248,8 +248,8 @@ public class HuffmanTree {
                 }
                 result+=temp.value.aChar;
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("File not found");
         }
         return result;
     }//解码器
@@ -259,6 +259,7 @@ public class HuffmanTree {
             String data=reader(filename);
             int counter=0,i=0;
             String result="";
+            System.out.print(filename+": ");
             while(i<data.length()){
                 while(counter<=50&&i<data.length()){
                     Node temp=root;
@@ -284,10 +285,14 @@ public class HuffmanTree {
                 stringToFile+=result;
                 counter=0;
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("File not found");
         }
-        writer(stringToFile,"codeprint.txt");
+        try {
+            writer(stringToFile,"codeprint.txt");
+        } catch (IOException e) {
+            System.out.println("File write error");
+        }
     }
     public static int getTreeDepth(Node root) {
         return root == null ? 0 : (1 + Math.max(getTreeDepth(root.left), getTreeDepth(root.right)));
@@ -356,7 +361,6 @@ public class HuffmanTree {
         }
     }
 }
-
 class Node implements Comparable<Node> {//节点
     character value;
     Node left;
